@@ -1,0 +1,23 @@
+{
+  "name": "digital-psychological-intervention-system",
+  "version": "1.0.0",
+  "description": "A comprehensive digital platform for psychological intervention and mental health support",
+  "main": "server/index.js",
+ "scripts": {
+  "install-all": "cd server && npm install && cd ../client && npm install",
+  "dev": "concurrently \"npm run server\" \"npm run client\"",
+  "server": "cd server && npm start",
+  "client": "cd client && npm start"
+},
+  "keywords": [
+    "mental-health",
+    "psychological-intervention",
+    "counseling",
+    "peer-support"
+  ],
+  "author": "SIH Psychology Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
