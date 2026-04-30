@@ -40,11 +40,9 @@ function App() {
               } />
               
               <Route path="/chat" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Chat />
-                  </Layout>
-                </ProtectedRoute>
+                <Layout>
+                  <Chat />
+                </Layout>
               } />
               
               <Route path="/appointments" element={
