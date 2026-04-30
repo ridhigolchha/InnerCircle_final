@@ -1,0 +1,9 @@
+{
+  "short_name": "Inner Circle",
+  "name": "Inner Circle – Your Quiet Space to Heal",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#ffffff"
+}
