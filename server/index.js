@@ -33,9 +33,26 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
-    : ['http://localhost:3000'],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5000',
+      process.env.CLIENT_URL
+    ].filter(Boolean);
+
+    // Allow any .vercel.app domain
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app')
+    ) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 
@@ -43,21 +60,23 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback-secret',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    touchAfter: 24 * 3600 // lazy session update
-  }),
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+// Session configuration (skip MongoStore if no MONGODB_URI yet)
+if (process.env.MONGODB_URI) {
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback-secret',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      touchAfter: 24 * 3600
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000
+    }
+  }));
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -109,18 +128,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
+// 404 handler for API routes only
+app.use('/api/*', (req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
   });
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
-});
+// Only listen on a port when running locally (not on Vercel)
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+  });
+}
 
 module.exports = app;

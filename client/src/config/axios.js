@@ -1,9 +1,11 @@
 import axios from 'axios';
 
 // Create axios instance with base configuration
+// In production (Vercel), API is on the same domain so we use empty string
+// In development, we proxy to localhost:5000
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
-  timeout: 10000,
+  baseURL: process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000'),
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
